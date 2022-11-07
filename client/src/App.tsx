@@ -3,6 +3,11 @@ import logo from './logo.svg';
 import './App.css';
 
 function App() {
+  const [data, setData] = React.useState<string>("none");
+  React.useEffect(() => {
+    fetch('/api/test').then(d => d.json()).then(d => setData(d.message))
+  }, [setData]);
+
   return (
     <div className="App">
       <header className="App-header">
@@ -16,7 +21,7 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn React
+          Learn React {data}
         </a>
       </header>
     </div>
