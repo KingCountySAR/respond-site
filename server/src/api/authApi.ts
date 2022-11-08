@@ -1,6 +1,6 @@
 import { Express } from 'express';
-// import { OAuth2Client } from 'google-auth-library';
-// import WorkspaceClient from '../googleWorkspace';
+import { OAuth2Client } from 'google-auth-library';
+import { Logger } from 'winston';
 
 export interface AuthData {
   email: string,
@@ -26,42 +26,39 @@ export function userFromAuth(ticket?: AuthData) {
 }
 
 
-export function addAuthApi(app: Express/*, authClient: OAuth2Client, workspaceClient: WorkspaceClient*/) {
-  // app.post("/api/auth/google", async (req, res) => {
-  //   const { token } = req.body;
-  //   console.log('CLIENT_ID', token, process.env.CLIENT_ID)
-  //   const ticket = await authClient.verifyIdToken({
-  //     idToken: token,
-  //     audience: process.env.CLIENT_ID
-  //   });
+export function addAuthApi(app: Express, authClient: OAuth2Client, log: Logger) {
+  app.post('/api/auth/google', async (req, res) => {
+    const { token } = req.body;
+    log.debug('CLIENT_ID', { token, clientId: process.env.CLIENT_ID })
+    const ticket = await authClient.verifyIdToken({
+      idToken: token,
+      audience: process.env.CLIENT_ID
+    });
 
-  //   const payload = ticket.getPayload();
-  //   if (!payload) {
-  //     res.status(500).json({message: 'Could not get ticket'});
-  //     return;
-  //   }
-  //   if (!payload.email) {
-  //     res.status(500).json({message: 'Could not get user email'});
-  //     return;
-  //   }
+    const payload = ticket.getPayload();
+    if (!payload) {
+      res.status(500).json({message: 'Could not get ticket'});
+      return;
+    }
+    if (!payload.email) {
+      res.status(500).json({message: 'Could not get user email'});
+      return;
+    }
 
-  //   if ((process.env.ALLOWED_DOMAINS?.split(',')?.indexOf(payload.hd ?? '') ?? 0) < 0) {
-  //     console.log(`${payload.email} from domain ${payload.hd} not allowed`)
-  //     res.status(403).json({error: 'User not from allowed Google domain' })
-  //     return;
-  //   }
+    if ((process.env.ALLOWED_DOMAINS?.split(',')?.indexOf(payload.hd ?? '') ?? 0) < 0) {
+      console.log(`${payload.email} from domain ${payload.hd} not allowed`)
+      res.status(403).json({error: 'User not from allowed Google domain' })
+      return;
+    }
 
-  //   const member = await workspaceClient.getUserFromEmail(payload.email);
-
-  //   console.log(`got member ${member.orgUnitPath}`)
-  //   req.session.auth = {
-  //     email: payload.email,
-  //     ...payload,
-  //   };
-  //   console.log(`Logged in ${payload.email}`);
-  //   res.status(200);
-  //   res.json(userFromAuth(req.session.auth));
-  // })
+    req.session.auth = {
+      email: payload.email,
+      ...payload,
+    };
+    log.info(`Logged in ${payload.email}`);
+    res.status(200);
+    res.json(userFromAuth(req.session.auth));
+  })
 
   app.post('/api/auth/logout', (req, res) => {
     req.session?.destroy(err => {

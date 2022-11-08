@@ -1,42 +1,41 @@
 import { SessionData, Store } from 'express-session';
 import { Knex } from 'knex';
+import { DbWrapper } from './db/dbBuilder';
 
 const noop = () => {}
 
 export default class KnexSessionStore extends Store {
-  readonly getKnex: () => Knex.QueryInterface;
+  readonly knex: Knex;
+  readonly table: string;
 
-  constructor(getKnex: () => Knex.QueryInterface) {
+  constructor(db: DbWrapper) {
     super();
-    this.getKnex = getKnex;
+    this.knex = db.knex;
+    this.table = db.t('sessions');
   }
+
   get(sid: string, callback: (err: any, session?: SessionData | null | undefined) => void = noop): void {
-    this.getKnex().table<{sid: string, session: string}>('sessions')
+    this.knex.table<{sid: string, session: string}>(this.table)
       .where('sid', sid)
       .first()
       .then(row => {
         callback(undefined, row ? JSON.parse(row.session) : undefined);
       });
   }
+
   set(sid: string, session: SessionData, callback?: ((err?: any) => void) | undefined): void {
-    this.getKnex()
-      .table('sessions')
-      .insert({
-        sid,
-        session: JSON.stringify(session),
-      })
-      .then(() => {
-        callback?.();
-      });
-  }
-  destroy(sid: string, callback?: ((err?: any) => void) | undefined): void {
-    this.getKnex()
-      .table('sessions')
-      .where('sid', sid)
-      .del()
-      .then(() => {
-        callback?.();
-      });
+    this.knex.transaction(async trx => {
+      await trx.table(this.table).where('sid', sid).del();
+      await trx.table(this.table).insert({ sid, session: JSON.stringify(session) })
+      callback?.();
+    });
   }
 
+  destroy(sid: string, callback?: ((err?: any) => void) | undefined): void {
+    this.knex()
+      .table(this.table)
+      .where('sid', sid)
+      .del()
+      .then(() => callback?.());
+  }
 }
