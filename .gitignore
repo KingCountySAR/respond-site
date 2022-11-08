@@ -11,6 +11,7 @@ coverage/
 
 /server/dist/
 /server/public/
+/server/store.sqlite
 
 # misc
 .DS_Store
@@ -18,6 +19,8 @@ coverage/
 .env.development.local
 .env.test.local
 .env.production.local
+dev.key
+dev.crt
 
 npm-debug.log*
 yarn-debug.log*

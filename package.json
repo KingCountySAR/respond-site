@@ -11,7 +11,6 @@
   "scripts": {
     "dev:client": "yarn workspace client start",
     "dev:server": "yarn workspace server dev",
-    "start": "yarn workspace server start",
     "build": "yarn workspace client build && yarn workspace server build"
   }
 }

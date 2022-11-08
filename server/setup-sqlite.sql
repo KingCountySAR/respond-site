@@ -1,0 +1,1 @@
+CREATE TABLE sessions (sid text, session text);
