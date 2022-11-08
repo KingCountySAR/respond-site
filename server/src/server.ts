@@ -1,11 +1,12 @@
 import express, { Response } from 'express';
 import session from 'express-session';
+import path from 'path';
 import { OAuth2Client } from 'google-auth-library';
 import { Logger } from 'winston';
 import { existsSync, readFileSync } from 'fs';
 
 import KnexSessionStore from './knexSessionStore';
-import { db } from './db/dbBuilder';
+import { buildDatabase } from './db/dbBuilder';
 import { addAuthApi, userFromAuth } from './api/authApi';
 import { createLogger } from './logging';
 
@@ -26,6 +27,8 @@ export default class Server {
   }
 
   async boot() {
+    const db = await buildDatabase();
+
     const app = express();
     app.use(express.static('public'));
 
@@ -56,6 +59,11 @@ export default class Server {
     this.log.debug('Auth ClientID:', { id: process.env.AUTH_CLIENT })
     const authClient = new OAuth2Client(process.env.AUTH_CLIENT);
     addAuthApi(app, authClient, this.log);
+
+
+    app.get('*', (_req, res) => {
+      res.sendFile(path.resolve(__dirname, '../public', 'index.html'));
+    });
 
     const port = process.env.PORT || 3333;
     app.listen(port);

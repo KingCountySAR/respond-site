@@ -34,7 +34,6 @@ jobs:
           cp -r server/dist/* build
           cp -r server/public/ build
           cp server/package.json build
-          cp server/web.config build
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2

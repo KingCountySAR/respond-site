@@ -1,7 +1,6 @@
 import { createLogger } from '../logging';
 import KnexFactory, { Knex } from 'knex';
-//@ts-ignore
-import KnexSqlite from 'knex/lib/dialects/better-sqlite3';
+
 //@ts-ignore
 import KnexMssql from 'knex/lib/dialects/mssql';
 const log = createLogger('knex');
@@ -11,7 +10,7 @@ export interface DbWrapper {
   t: (name: string) => string,
 }
 
-function build() {
+export async function buildDatabase() {
   const commonOptions = {
     log: {
       warn(warning: string) { log.warn(warning); },
@@ -44,20 +43,19 @@ function build() {
         }
       })
     });
+  } else {
+    //@ts-ignore
+    const KnexSqlite = (await import('knex/lib/dialects/better-sqlite3')).default;
+    // Development environment - return SQLite wrapper
+    return ({
+      t: (name: string) => name,
+      knex: KnexFactory({
+        ...commonOptions,
+        client: KnexSqlite,
+        connection: {
+          filename: './store.sqlite',
+        }
+      })
+    });
   }
-  
-  // Default - return SQLite wrapper
-  return ({
-    t: (name: string) => name,
-    knex: KnexFactory({
-      ...commonOptions,
-      client: KnexSqlite,
-      connection: {
-        filename: './store.sqlite',
-      }
-    })
-  });
 }
-
-
-export const db = build();
