@@ -25,9 +25,9 @@ export const HomePage = ({store}: {
           {store.myActivities.map(a => (
             <Card key={a.id}>
               <CardActionArea onClick={() => alert('click')}>
-                <Alert severity={a.status == 3 ? 'success' : 'warning'}>
+                <Alert severity={a.status === 3 ? 'success' : 'warning'}>
                   <Typography variant="h6" component="div">{a.idNumber} {a.title}</Typography>
-                  <Typography>Currently {a.status == 3 ? 'responding' : 'on standby'}</Typography>
+                  <Typography>Currently {a.status === 3 ? 'responding' : 'on standby'}</Typography>
                 </Alert>
               </CardActionArea>
             </Card>
@@ -59,7 +59,7 @@ export const HomePage = ({store}: {
         </CardActionArea>
       </Card>
     ))}
-    {store.missions.length == 0 && <Typography>No recent missions</Typography>}
+    {store.missions.length === 0 && <Typography>No recent missions</Typography>}
     </Stack>
     {store.otherActivities.length > 0 && <>
       <Typography sx={{mt:2}}>Other Events</Typography>

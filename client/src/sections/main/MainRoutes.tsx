@@ -2,8 +2,6 @@ import * as React from 'react';
 import { observer } from "mobx-react";
 import { Routes, Route } from "react-router-dom";
 import Store from "../../store";
-import AdminStore from "../../store/adminStore";
-import { Typography } from '@mui/material';
 import MainChrome from './MainChrome';
 import MainStore from '../../store/mainStore';
 import HomePage from './HomePage';

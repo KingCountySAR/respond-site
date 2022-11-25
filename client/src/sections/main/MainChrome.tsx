@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Link as RouterLink, Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import AppBar from '@mui/material/AppBar';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -14,11 +14,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import MainStore from '../../store/mainStore';
 import { orange } from '@mui/material/colors';
 
-const theme = createTheme({
-});
-
-export function MainChrome({children, store}: {
-  children?: React.ReactNode,
+export function MainChrome({store}: {
   store: MainStore,
 }) {
   const appChrome = React.useContext(AppChromeContext)!;
