@@ -76,7 +76,7 @@ export function MainChrome({children, store}: {
         </div>
           </Toolbar>
         </AppBar>
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        <Box component="main" sx={{ flexGrow: 1, pt: 2 }}>
           <Toolbar />
           <Outlet />
         </Box>

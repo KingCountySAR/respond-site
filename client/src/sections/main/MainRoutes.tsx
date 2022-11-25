@@ -6,6 +6,7 @@ import AdminStore from "../../store/adminStore";
 import { Typography } from '@mui/material';
 import MainChrome from './MainChrome';
 import MainStore from '../../store/mainStore';
+import HomePage from './HomePage';
 
 class MainFactory {
   rootStore?: Store;
@@ -28,7 +29,7 @@ export const MainRoutes = (props: {
   return (
     <Routes>
       <Route element={<MainChrome store={mainStore} />}>
-        <Route index element={<div>Home page</div>}/>
+        <Route index element={<HomePage store={mainStore} />}/>
         <Route path="/about" element={<div>About page</div>}/>
       </Route>
     </Routes>

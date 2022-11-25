@@ -22,6 +22,7 @@
     "jsx": "react-jsx"
   },
   "include": [
-    "src"
-, "../server/api-models/siteConfig.ts"  ]
+    "src",
+    "../server/api-models/**/*"
+  ]
 }

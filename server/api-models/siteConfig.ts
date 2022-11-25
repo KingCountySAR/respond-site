@@ -1,7 +1,8 @@
 export interface SiteConfig {
   clientId: string,
   organization?: {
-    title: string
+    id: number,
+    title: string,
   },
   brand?: {
     primary?: string,
