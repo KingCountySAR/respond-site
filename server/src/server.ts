@@ -1,23 +1,18 @@
-import express, { Response } from 'express';
+import express from 'express';
 import session from 'express-session';
 import path from 'path';
 import { OAuth2Client } from 'google-auth-library';
 import { Logger } from 'winston';
-import { existsSync, readFileSync } from 'fs';
+
 
 import KnexSessionStore from './knexSessionStore';
 import { buildDatabase } from './db/dbBuilder';
-import { addAuthApi, userFromAuth } from './api/authApi';
+import { addAuthApi } from './api/authApi';
 import { createLogger } from './logging';
+import { addCoreApi } from './api/coreApi';
+import Repository from './db/repository';
 
-export async function withErrors(res: Response, log:Logger, action: () => Promise<void>) {
-  try {
-    await action();
-  } catch (err) {
-    log.error(err);
-    res.status(500).json({ message: err });
-  }
-}
+
 
 export default class Server {
   log: Logger;
@@ -28,6 +23,7 @@ export default class Server {
 
   async boot() {
     const db = await buildDatabase();
+    const repo = new Repository(db);
 
     const app = express();
     app.use(express.static('public'));
@@ -42,23 +38,10 @@ export default class Server {
       store: new KnexSessionStore(db),
     }))
 
-    app.get('/api/boot', async (req, res) => {
-      withErrors(res, this.log, async () => {
-        if (!req.session?.auth && existsSync('local-auth.json')) {
-          this.log.info('using debug login credentials in local-auth.json');
-          req.session.auth = JSON.parse(readFileSync('local-auth.json', 'utf8'));
-        }
-  
-        res.json({
-          user: userFromAuth(req.session.auth),
-          config: { clientId: process.env.AUTH_CLIENT }
-        })
-      });
-    });
-
     this.log.debug('Auth ClientID:', { id: process.env.AUTH_CLIENT })
     const authClient = new OAuth2Client(process.env.AUTH_CLIENT);
-    addAuthApi(app, authClient, this.log);
+    addAuthApi(app, authClient, repo, this.log);
+    addCoreApi(app, repo, this.log);
 
 
     app.get('*', (_req, res) => {

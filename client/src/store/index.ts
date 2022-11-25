@@ -7,10 +7,7 @@ import LoginModel, { LoginResult } from '../../../server/api-models/loginModel';
 import UserViewModel, { loginToViewModel } from '../models/userViewModel';
 import { AppChrome } from '../models/appChromeContext';
 import { CredentialResponse } from '@react-oauth/google';
-
-interface SiteConfig {
-  clientId: string
-}
+import { SiteConfig } from '../../../server/api-models/siteConfig';
 
 class Store implements AppChrome {
   @observable route: { location: Location, params?: Params<string> } = { location: {
@@ -34,7 +31,7 @@ class Store implements AppChrome {
   }
 
   async start() {
-    const response = await Api.get<{config: SiteConfig, user: LoginResult}>('/api/boot');
+    const response = await Api.get<{config: SiteConfig, user: LoginResult}>('/api/session');
     runInAction(() => {
       this.config = response.config as SiteConfig;
       this.user = loginToViewModel(response.user);

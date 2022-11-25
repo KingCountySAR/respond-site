@@ -9,8 +9,9 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import CustomRouter from './components/CustomRouter';
 import { AppChromeContext } from './models/appChromeContext';
+import MainRoutes from './sections/main/MainRoutes';
 
-const AdminRoutes = React.lazy(() => import('./sections/admin/AdminRoutes' /* webpackChunkName: "admin" */));
+const AdminRoutes = React.lazy(() => import('./sections/site-admin/AdminRoutes' /* webpackChunkName: "admin" */));
 
 const LoginPage = (props: {
   login:(response?: CredentialResponse) => Promise<void>
@@ -33,14 +34,17 @@ const AppBody = observer(({store}: {store: Store}) => {
   return (
     <CustomRouter history={store.history}>
       <Routes>
-        <Route element={<div>Main Page Wrapper</div>}>
+        {/* <Route element={<div>Main Page Wrapper</div>}>
           <Route index element={<div>Home page</div>} />
           <Route path="/about" element={<div>About Page</div>} />
-        </Route>
-        <Route path="admin/*" element={
+        </Route> */}
+        <Route path="site-admin/*" element={
           <Suspense fallback={<div>Loading admin pages ...</div>}>
             <AdminRoutes store={store} />
           </Suspense>
+        }/>
+        <Route path="*" element={
+          <MainRoutes store={store} />
         }/>
       </Routes>
     </CustomRouter>

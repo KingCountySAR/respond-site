@@ -22,7 +22,7 @@ const drawerWidth = 240;
 
 const menu :[string, string, string, React.ReactNode][] = [
   [ 'home', '/', 'Site Home', <InboxIcon /> ],
-  [ 'orgs', '/admin/organizations', 'Organizations', <MailIcon /> ],
+  [ 'orgs', '/site-admin/organizations', 'Organizations', <MailIcon /> ],
 ]
 
 export function AdminChrome(props: {
