@@ -4,7 +4,12 @@ import MainStore from "../../store/mainStore";
 
 export const HomePage = ({store}: {
   store: MainStore
-}) => (<>
+}) => {
+  const myActivities = store.myActivities;
+  const missions = store.missions;
+  const otherActivities = store.otherActivities;
+  
+  return (<>
   {
     store.loadingMyActivities ?
     (
@@ -17,7 +22,7 @@ export const HomePage = ({store}: {
         <AlertTitle>Error</AlertTitle>
         {store.myActivitiesError}
       </Alert>
-    ) : store.myActivities.length ?
+    ) : myActivities ?
     (
       <Box sx={{pb: 2}}>
         <Typography>Current Response</Typography>
@@ -45,7 +50,7 @@ export const HomePage = ({store}: {
   (<Box>
     <Typography>Missions</Typography>
     <Stack>
-    {store.missions.map(a => (
+    {missions.map(a => (
       <Card key={a.id}>
         <CardActionArea onClick={() => alert('show details for ' + a.title)}>
         <CardContent>
@@ -59,12 +64,12 @@ export const HomePage = ({store}: {
         </CardActionArea>
       </Card>
     ))}
-    {store.missions.length === 0 && <Typography>No recent missions</Typography>}
+    {missions.length === 0 && <Typography>No recent missions</Typography>}
     </Stack>
-    {store.otherActivities.length > 0 && <>
+    {otherActivities.length > 0 && <>
       <Typography sx={{mt:2}}>Other Events</Typography>
       <Stack>
-      {store.otherActivities.map(a => (
+      {otherActivities.map(a => (
         <Card key={a.id}>
           <CardActionArea>
           <CardContent>
@@ -83,6 +88,7 @@ export const HomePage = ({store}: {
   </Box>)
   }
   </>
-);
+)
+};
 
 export default observer(HomePage);
