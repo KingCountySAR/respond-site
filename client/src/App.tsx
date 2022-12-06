@@ -34,10 +34,6 @@ const AppBody = observer(({store}: {store: Store}) => {
   return (
     <CustomRouter history={store.history}>
       <Routes>
-        {/* <Route element={<div>Main Page Wrapper</div>}>
-          <Route index element={<div>Home page</div>} />
-          <Route path="/about" element={<div>About Page</div>} />
-        </Route> */}
         <Route path="site-admin/*" element={
           <Suspense fallback={<div>Loading admin pages ...</div>}>
             <AdminRoutes store={store} />

@@ -10,8 +10,6 @@ import { OrgActivityModel } from '../../api-models/activityModel';
 export function addCoreApi(app: Express, repo: Repository, log: Logger) {
   app.get('/api/session', async (req, res) => {
     catchErrors(res, log, async () => {
-      console.log(req, req.headers);
-
       if (!req.session?.auth && existsSync('local-auth.json')) {
         log.info('using debug login credentials in local-auth.json');
         req.session.auth = JSON.parse(readFileSync('local-auth.json', 'utf8'));
@@ -49,7 +47,7 @@ export function addCoreApi(app: Express, repo: Repository, log: Logger) {
         return;
       }
 
-      const activities = await (await repo.activities.getCurrentForOrg(parseInt(req.params.organizationId)));
+      const activities = await repo.activities.getCurrentForOrg(parseInt(req.params.organizationId));
       
       const withRosters :OrgActivityModel[] = await Promise.all(
         activities.map(async a => ({

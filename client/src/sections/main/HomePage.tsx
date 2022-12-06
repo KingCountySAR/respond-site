@@ -22,7 +22,7 @@ export const HomePage = ({store}: {
         <AlertTitle>Error</AlertTitle>
         {store.myActivitiesError}
       </Alert>
-    ) : myActivities ?
+    ) : myActivities.length ?
     (
       <Box sx={{pb: 2}}>
         <Typography>Current Response</Typography>

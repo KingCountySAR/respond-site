@@ -1,10 +1,8 @@
 import { Express } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 import { Logger } from 'winston';
-import { DbWrapper } from '../db/dbBuilder';
-import { OrganizationRow } from '../db/organizationRow';
 import Repository from '../db/repository';
-import Organization from '../model/organization';
+import { MemberProviderRegistry } from '../memberProviders/memberProvider';
 import { AuthData, userFromAuth } from './apiUtils';
 
 declare module 'express-session' {
@@ -13,7 +11,7 @@ declare module 'express-session' {
   }
 }
 
-export function addAuthApi(app: Express, authClient: OAuth2Client, repo: Repository, log: Logger) {
+export function addAuthApi(app: Express, authClient: OAuth2Client, memberProviderRegistry: MemberProviderRegistry, repo: Repository, log: Logger) {
   app.post('/api/auth/google', async (req, res) => {
     const { token } = req.body;
     log.debug('CLIENT_ID', { token, clientId: process.env.CLIENT_ID })
@@ -42,16 +40,30 @@ export function addAuthApi(app: Express, authClient: OAuth2Client, repo: Reposit
       return;
     }
 
-    if ((organization.allowedAuthDomains?.indexOf(payload.hd ?? '') ?? 0) < 0) {
-      console.log(`${payload.email} from domain ${payload.hd} not allowed`);
-      res.status(403).json({error: 'User not from allowed domain' });
+    const memberProvider = memberProviderRegistry.get(organization.memberProvider?.provider);
+    console.log('get memberProvider for ', organization.memberProvider?.provider ?? "NOT SET IN JSON", memberProvider);
+    if (!memberProvider) {
+      log.warn(`Can't find memberProvider for org ${organization.id}: ${organization.memberProvider?.provider}`);
+      res.status(500).json({error: 'Invalid configuration'});
+      return;
+    }
+
+    const authInfo = {
+      provider: 'google',
+      email: payload.email,
+    };
+    const memberInfo = await memberProvider.getMemberInfo(organization.id, authInfo, organization.memberProvider);
+    if (!memberInfo) {
+      res.status(403).json({error: 'User not known' });
       return;
     }
 
     req.session.auth = {
       email: payload.email,
-      userId: `google:${payload.email}`,
+      userId: memberInfo.id,
       organizationId: organization.id,
+      groups: memberInfo.groups,
+      isSiteAdmin: organization.id === 1,
       ...payload,
     };
     log.info(`Logged in ${payload.email}`);

@@ -35,7 +35,7 @@ export function AdminChrome(props: {
   const handleClose = () => setMenuAnchor(null);
   
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', flex:'1 1 auto' }}>
       <CssBaseline />
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
@@ -96,7 +96,7 @@ export function AdminChrome(props: {
           </List>
         </Box>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Box component="main" sx={{ flex: '1 1 auto', p: 3, display: 'flex', flexDirection:'column' }}>
         <Toolbar />
         <Outlet />
       </Box>

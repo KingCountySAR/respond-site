@@ -6,6 +6,8 @@ import AdminStore from "../../store/adminStore";
 import AdminHomePage from "./AdminHomePage";
 import AdminChrome from './AdminChrome';
 import { Typography } from '@mui/material';
+import OrgListPage from './OrgListPage';
+import OrgDetailPage from './OrgDetailPage';
 
 class AdminFactory {
   rootStore?: Store;
@@ -29,6 +31,8 @@ export const AdminRoutes = (props: {
     <Routes>
       <Route element={<AdminChrome />}>
         <Route index element={<AdminHomePage store={adminStore} />} />
+        <Route path="/organizations" element={<OrgListPage store={adminStore} />}/>
+        <Route path="/organizations/:orgId" element={<OrgDetailPage store={adminStore} />}/>
         <Route path="*" element={<Typography>Page not found</Typography>} />
       </Route>
     </Routes>

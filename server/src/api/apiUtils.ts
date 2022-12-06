@@ -9,11 +9,14 @@ export interface AuthData {
   picture?: string,
   userId: string,
   organizationId: number,
+  groups: string[],
+  isSiteAdmin: boolean,
 }
 
 export function userFromAuth(ticket?: AuthData) {
   if (!ticket) return undefined;
   return {
+    userId: ticket.userId,
     name: ticket.name,
     email: ticket.email,
     domain: ticket.hd,

@@ -12,6 +12,10 @@ export default class Organization {
   };
   adminOnly: boolean = false;
   hasMissions: boolean = false;
+  memberProvider: {
+    provider: string,
+    [key:string]: any,
+  } = { provider: 'LocalDatabaseMembers' };
 
   static fromRow(row: OrganizationRow) :Organization {
     let org = Object.assign(
@@ -23,5 +27,14 @@ export default class Organization {
       }
     );
     return org;
+  }
+
+  toRow() :OrganizationRow {
+    const { id, domain, ...json } = this;
+    return {
+      id,
+      domain,
+      properties: JSON.stringify(json),
+    }
   }
 }
