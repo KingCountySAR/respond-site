@@ -1,4 +1,4 @@
-import Organization from "../model/organization";
+import Organization, { Partnership } from "../model/organization";
 import { DbWrapper } from "./dbBuilder";
 
 export class OrganizationRepo {
@@ -30,8 +30,29 @@ export class OrganizationRepo {
 
   private async loadAll() {
     if (this.orgs.length == 0) {
-      this.orgs = (await this.db.knex.table(this.db.t('organizations'))).map(r => Organization.fromRow(r)) ?? [];
+      const partners :{[key:number]: Partnership[]} = (await this.db.knex.table(this.db.t('orgPartnerships'))).reduce((accum, cur) => {
+        return ({
+          ...accum,
+          [cur.organizationId]: [
+            ...accum[cur.organizationId] ?? [],
+            Partnership.fromRow(cur),
+          ]
+        })
+      }, {}) ?? {};
+
+      const orgTitles: {[id: number]: string } = {};
+
+      this.orgs = (await this.db.knex.table(this.db.t('organizations'))).map(r => {
+        const org = Organization.fromRow(r);
+        org.partners = partners[r.id];
+        orgTitles[org.id] = org.title;
+        return org;
+      }) ?? [];
+
+      // Now that we know org names, update the partnerships pointing to an org.
+      Object.values(partners).forEach(list => list.forEach(p => p.partner = { id: p.partner.id, title: orgTitles[p.partner.id] ?? 'Unknown'}));
     }
+
     return this.orgs;
   }
 }

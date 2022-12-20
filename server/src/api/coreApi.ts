@@ -1,3 +1,4 @@
+import '../modules';
 import { Express } from 'express';
 import { Logger } from 'winston';
 import Repository from '../db/repository';
@@ -31,7 +32,14 @@ export function addCoreApi(app: Express, repo: Repository, log: Logger) {
       }
 
       res.json({
-        organization: await organizationFromReq(req, repo),
+        organization: {
+          ...org,
+          partners: org?.partners.map(p => ({
+            partner: p.partner,
+            canCreateEvents: p.canCreateEvents,
+            canCreateMissions: p.canCreateMissions,
+          }))
+        },
         config,
         user: userFromAuth(req.session.auth),
       });

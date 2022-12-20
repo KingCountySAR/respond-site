@@ -1,3 +1,4 @@
+import './modules';
 import express from 'express';
 import session from 'express-session';
 import path from 'path';
@@ -15,7 +16,6 @@ import { defaultMembersRepositoryRegistry } from './memberProviders/memberProvid
 import LocalDatabaseMembersProvider from './memberProviders/localDatabaseMembersProvider';
 import { addSiteAdminApi } from './api/siteAdminApi';
 import D4HMembersProvider from './memberProviders/d4hMembersProvider';
-
 
 export default class Server {
   log: Logger;

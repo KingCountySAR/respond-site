@@ -1,15 +1,10 @@
+import '../modules';
 import { Express } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 import { Logger } from 'winston';
 import Repository from '../db/repository';
 import { MemberProviderRegistry } from '../memberProviders/memberProvider';
-import { AuthData, userFromAuth } from './apiUtils';
-
-declare module 'express-session' {
-  export interface SessionData {
-    auth: AuthData
-  }
-}
+import { userFromAuth } from './apiUtils';
 
 export function addAuthApi(app: Express, authClient: OAuth2Client, memberProviderRegistry: MemberProviderRegistry, repo: Repository, log: Logger) {
   app.post('/api/auth/google', async (req, res) => {
