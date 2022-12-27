@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Logger } from 'winston';
+import { LoginResult } from '../../api-models/loginModel';
 import Repository from '../db/repository';
 
 export interface AuthData {
@@ -13,13 +14,13 @@ export interface AuthData {
   isSiteAdmin: boolean,
 }
 
-export function userFromAuth(ticket?: AuthData) {
+export function userFromAuth(ticket?: AuthData): LoginResult|undefined {
   if (!ticket) return undefined;
   return {
     userId: ticket.userId,
-    name: ticket.name,
+    name: ticket.name ?? '',
     email: ticket.email,
-    domain: ticket.hd,
+    domain: ticket.hd ?? '',
     picture: ticket.picture,
   }
 }
@@ -42,7 +43,9 @@ export function expandProperties<TOut>(row: { properties: string }) :TOut {
 }
 
 export async function organizationFromReq(req: Request, repo: Repository) {
-  const domain = (process.env.environment === 'prod' ? req.hostname : (req.headers['x-forwarded-host'] as string ?? req.hostname)).split(':')[0];
+  console.log('headers', req.headers);
+  const domain = (process.env.environment === 'prod' ? req.hostname : (req.headers.origin as string ?? req.hostname)).split(':')[0];
+  console.log('domain header', domain);
   return repo.organizations.getFromDomain(domain);
 }
 

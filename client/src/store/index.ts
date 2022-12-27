@@ -2,12 +2,15 @@ import { createTheme } from '@mui/material';
 import { action, computed, makeObservable, observable, runInAction } from 'mobx';
 import { Location, Params } from 'react-router-dom';
 import { createBrowserHistory } from 'history';
+import { io, Socket } from 'socket.io-client';
+
 import Api from './api';
 import LoginModel, { LoginResult } from '../../../server/api-models/loginModel';
 import UserViewModel, { loginToViewModel } from '../models/userViewModel';
 import { AppChrome } from '../models/appChromeContext';
 import { CredentialResponse } from '@react-oauth/google';
 import { SiteConfig } from '../../../server/api-models/siteConfig';
+import * as SocketApi from '../../../server/api-models/socketApi';
 
 class Store implements AppChrome {
   @observable route: { location: Location, params?: Params<string> } = { location: {
@@ -25,12 +28,35 @@ class Store implements AppChrome {
   @observable loginError?: string;
 
   @observable config: SiteConfig = { clientId: '' };
+  @observable connected: boolean = false;
+  socket?: Socket<SocketApi.ServerToClientEvents, SocketApi.ClientToServerEvents>;
 
   constructor() {
     makeObservable(this);
   }
 
   async start() {
+    console.log('setting up socket');
+    this.socket = io('/', {
+      path: '/socket',
+      autoConnect: true,
+      transports: ['websocket', 'polling']
+    });
+    this.socket.on('connect', () => {
+      runInAction(() => this.connected = true);
+      console.log('socket connected');
+    });
+    this.socket.on('welcome', (msg) => {
+      console.log('I am welcomed: ', msg);
+    })
+    this.socket.on('disconnect', () => {
+      runInAction(() => this.connected = false);
+      console.log('socket disconnected');
+    })  
+    console.log('socket setup')
+    this.socket.connect();
+    console.log('socket sent connect');
+
     const response = await Api.get<{config: SiteConfig, user: LoginResult}>('/api/session');
     runInAction(() => {
       this.config = response.config as SiteConfig;
@@ -54,6 +80,7 @@ class Store implements AppChrome {
         } else {
           console.log('Logging in', res);
           this.user = loginToViewModel(res as LoginResult);
+          this.socket?.connect();
         }
       });
     }

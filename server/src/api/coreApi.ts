@@ -2,47 +2,25 @@ import '../modules';
 import { Express } from 'express';
 import { Logger } from 'winston';
 import Repository from '../db/repository';
-import { catchErrors, userFromAuth, organizationFromReq, expandProperties, pick } from './apiUtils';
+import { catchErrors, userFromAuth, organizationFromReq, expandProperties, pick, AuthData } from './apiUtils';
 import { existsSync, readFileSync } from 'fs';
 import { SiteConfig } from '../../api-models/siteConfig';
 import Responder from '../model/responder';
 import { OrgActivityModel } from '../../api-models/activityModel';
+import { SocketServer } from '../server';
+import Organization from '../model/organization';
 
 export function addCoreApi(app: Express, repo: Repository, log: Logger) {
   app.get('/api/session', async (req, res) => {
     catchErrors(res, log, async () => {
-      if (!req.session?.auth && existsSync('local-auth.json')) {
-        log.info('using debug login credentials in local-auth.json');
-        req.session.auth = JSON.parse(readFileSync('local-auth.json', 'utf8'));
-      }
+      // if (!req.session?.auth && existsSync('local-auth.json')) {
+      //   log.info('using debug login credentials in local-auth.json');
+      //   req.session.auth = JSON.parse(readFileSync('local-auth.json', 'utf8'));
+      // }
 
       const org = await organizationFromReq(req, repo);
-      let config :SiteConfig = {
-        clientId: process.env.AUTH_CLIENT!,
-      };
-      if (org) {
-        config = {
-          ...config,
-          organization: org ? {
-            id: org.id,
-            title: org.rosterName ?? org.title,
-          } : undefined,
-          brand: org?.brand,
-        }
-      }
-
-      res.json({
-        organization: {
-          ...org,
-          partners: org?.partners.map(p => ({
-            partner: p.partner,
-            canCreateEvents: p.canCreateEvents,
-            canCreateMissions: p.canCreateMissions,
-          }))
-        },
-        config,
-        user: userFromAuth(req.session.auth),
-      });
+      const result = await getSessionState(org, req.session.auth, repo, log);
+      res.json(result);
     });
   });
 
@@ -116,4 +94,47 @@ export function addCoreApi(app: Express, repo: Repository, log: Logger) {
       list: activities
     })
   });
+}
+
+export function addCoreSocketHandlers(io: SocketServer, repo: Repository, log: Logger) {
+  io.on('connect', (socket) => {
+    //console.log('My Socket', socket.handshake.headers.host?.split(':')[0]);
+    socket.emit('welcome', JSON.stringify({headers: socket.handshake.headers, session: (socket.request as any).session}));
+    // repo.organizations.get((socket.request as any).session.auth.organizationId)
+    // .then((org?: Organization) => {
+    //   return getSessionState(org, (socket.request as any).session.auth, repo, log);
+    // })
+    // .then(state => {
+    //   socket.emit('welcome', state as any);
+    // });
+  });
+}
+
+async function getSessionState( org: Organization|undefined, auth: AuthData|undefined, repo: Repository, log: Logger) {
+  let config :SiteConfig = {
+    clientId: process.env.AUTH_CLIENT!,
+  };
+  if (org) {
+    config = {
+      ...config,
+      organization: org ? {
+        id: org.id,
+        title: org.rosterName ?? org.title,
+      } : undefined,
+      brand: org?.brand,
+    }
+  }
+
+  return {
+    organization: {
+      ...org,
+      partners: org?.partners.map(p => ({
+        partner: p.partner,
+        canCreateEvents: p.canCreateEvents,
+        canCreateMissions: p.canCreateMissions,
+      }))
+    },
+    config,
+    user: userFromAuth(auth),
+  };
 }

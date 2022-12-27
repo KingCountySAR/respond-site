@@ -3,12 +3,13 @@ export interface LoginError {
 }
 
 export interface LoginResult {
+  userId: string,
   name: string,
   email: string,
   domain: string,
   isTrainee?: boolean,
   picture?: string,
-  error: undefined,
+  error?: undefined,
 }
 
 type LoginModel = LoginResult|LoginError;
